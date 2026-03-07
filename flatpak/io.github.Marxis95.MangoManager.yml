@@ -1,0 +1,63 @@
+id: io.github.Marxis95.MangoManager
+runtime: org.kde.Platform
+runtime-version: '6.9'
+sdk: org.kde.Sdk
+command: mangomanager-wrapper
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --share=network
+  - --filesystem=home
+
+cleanup:
+  - /include
+  - /share/man
+  - /share/doc
+  - /lib/pkgconfig
+  - "*.la"
+  - "*.a"
+
+modules:
+  - name: python-dependencies
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - pip3 install --prefix=/app --no-cache-dir psutil PySide6-Essentials
+      - |
+        rm -rf /app/lib/python3.12/site-packages/PySide6/examples
+        rm -rf /app/lib/python3.13/site-packages/PySide6/examples
+        rm -rf /app/bin/pyside6-*
+    sources:
+      - type: shell
+        commands:
+          - echo "Installing GUI dependencies..."
+
+  - name: mangomanager-app
+    buildsystem: simple
+    sources:
+      - type: file
+        path: ../Source/mangomanager.py
+      - type: file
+        path: mangomanager.png
+    build-commands:
+      - install -D mangomanager.py /app/bin/mangomanager.py
+      - install -D mangomanager.png /app/share/icons/hicolor/256x256/apps/io.github.Marxis95.MangoManager.png
+      - |
+        echo '[Desktop Entry]
+        Name=MangoHud Profile Manager
+        Comment=MangoHud Profile Manager
+        Exec=mangomanager-wrapper
+        Type=Application
+        Icon=io.github.Marxis95.MangoManager
+        Categories=Game;Utility;' > io.github.Marxis95.MangoManager.desktop
+      - install -D io.github.Marxis95.MangoManager.desktop /app/share/applications/io.github.Marxis95.MangoManager.desktop
+      - |
+        echo '#!/bin/sh
+        export PYTHONPATH=$PYTHONPATH:/app/lib/python3.12/site-packages:/app/lib/python3.13/site-packages
+        exec python3 /app/bin/mangomanager.py "$@"' > /app/bin/mangomanager-wrapper
+      - chmod +x /app/bin/mangomanager-wrapper

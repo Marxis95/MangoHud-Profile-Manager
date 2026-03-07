@@ -1,0 +1,12 @@
+# Ignore the large binary
+Appimage/MangoManager-x86_64.AppImage
+
+# Ignore Python environment and cache
+venv/
+__pycache__/
+*.pyc
+
+# Ignore build artifacts
+build/
+dist/
+*.spec
