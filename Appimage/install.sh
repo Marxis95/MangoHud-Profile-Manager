@@ -13,7 +13,7 @@ zenity --question --text="Do you want to install $APP_NAME?" --title="Install $A
 # 2. Check if AppImage exists
 if [ ! -f "$APPIMAGE_FILE" ]; then
     zenity --error --text="Error: $APPIMAGE_FILE not found in this folder."
-    exit
+    exit 1
 fi
 
 # 3. Create directories
@@ -24,7 +24,6 @@ cp "$APPIMAGE_FILE" "$INSTALL_DIR/$FILE_ID.AppImage"
 chmod +x "$INSTALL_DIR/$FILE_ID.AppImage"
 
 # 5. Icon Detection Logic
-# Check for 'mangomanager.png' OR 'icon.png'
 if [ -f "mangomanager.png" ]; then
     cp "mangomanager.png" "$ICON_DIR/$FILE_ID.png"
     FINAL_ICON="$ICON_DIR/$FILE_ID.png"
@@ -32,7 +31,6 @@ elif [ -f "icon.png" ]; then
     cp "icon.png" "$ICON_DIR/$FILE_ID.png"
     FINAL_ICON="$ICON_DIR/$FILE_ID.png"
 else
-    # Fallback to a system icon if no PNG is provided in the folder
     FINAL_ICON="utilities-system-monitor"
 fi
 
@@ -48,7 +46,7 @@ Terminal=false
 Categories=Game;Utility;
 EOF
 
-# Update the desktop database so the icon shows up immediately
+# Update the desktop database
 update-desktop-database "$DESKTOP_DIR" 2>/dev/null
 
 zenity --info --text="$APP_NAME installed successfully! Check your app menu." --title="Success"
