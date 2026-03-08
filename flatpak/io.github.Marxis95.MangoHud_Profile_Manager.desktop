@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=MangoHud Profile Manager
+Comment=Manage MangoHud performance overlay profiles
+Exec=mangomanager-wrapper
+Type=Application
+Icon=io.github.Marxis95.MangoHud_Profile_Manager
+Categories=Utility;
