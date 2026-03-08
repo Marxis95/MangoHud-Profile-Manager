@@ -18,6 +18,14 @@ VSYNC_MAP = {
     "On": "3"
 }
 
+GL_VSYNC_MAP = {
+    "Unset": "DELETE",  
+    "Adaptive": "-1",
+    "Off": "0",
+    "On": "1",
+    "Custom (n)": "CUSTOM"
+}
+
 class GameSelectionDialog(QDialog):
     def __init__(self, games, parent=None):
         super().__init__(parent)
@@ -65,6 +73,7 @@ class MangoManager(QMainWindow):
             ("fps_limit", "FPS Limit (0, 60, 144)", "input"),
             ("fps_limit_method", "Limit Method", ["early", "late"]),
             ("vsync", "VSync Mode", list(VSYNC_MAP.keys())),
+            ("gl_vsync", "OpenGL VSync Mode", list(GL_VSYNC_MAP.keys())),
         ]
 
         self.option_widgets = {}
@@ -145,17 +154,30 @@ class MangoManager(QMainWindow):
                 w = QComboBox()
                 w.addItems(ui_type)
                 w.currentTextChanged.connect(self.save_config)
+                
+                # SPECIAL HANDLING FOR GL_VSYNC 'n' BOX
+                if key == "gl_vsync":
+                    self.gl_n_input = QLineEdit()
+                    self.gl_n_input.setPlaceholderText("n value (e.g. 2)")
+                    self.gl_n_input.setFixedWidth(80)
+                    self.gl_n_input.setVisible(False)
+                    self.gl_n_input.textChanged.connect(self.save_config)
             else:
                 w = QLineEdit()
                 w.textChanged.connect(self.save_config)
 
             self.form_layout.addRow(label, w)
             self.option_widgets[key] = w
-
+            
+            # Add the 'n' box directly under the GL VSync dropdown
+            if key == "gl_vsync":
+                self.form_layout.addRow("   └─ Sync Value (n)", self.gl_n_input)
+                w.currentTextChanged.connect(lambda t: self.gl_n_input.setVisible(t == "Custom (n)"))
 
         self.right_layout.addLayout(self.form_layout)
         self.right_layout.addStretch()
         self.right_layout.addWidget(QLabel("<i>Note: Other settings are preserved when editing.</i>"))
+        
         self.open_folder_btn = QPushButton("📂 Open Config Folder")
         self.open_folder_btn.setStyleSheet("height: 30px; margin-bottom: 10px;")
         self.open_folder_btn.clicked.connect(lambda: self.safe_open(self.config_dir))
@@ -201,9 +223,21 @@ class MangoManager(QMainWindow):
             if isinstance(widget, QCheckBox):
                 widget.setChecked(key in data)
             elif isinstance(widget, QComboBox):
-                raw_val = data.get(key, "")
+                raw_val = data.get(key, "DELETE")
                 if key == "vsync":
                     display_name = next((k for k, v in VSYNC_MAP.items() if v == raw_val), "Unset")
+                    index = widget.findText(display_name)
+                elif key == "gl_vsync":
+                    # Check if it's a custom 'n' value
+                    if raw_val not in ["DELETE", "0", "1", "-1", ""]:
+                        display_name = "Custom (n)"
+                        self.gl_n_input.blockSignals(True)
+                        self.gl_n_input.setText(raw_val)
+                        self.gl_n_input.blockSignals(False)
+                        self.gl_n_input.setVisible(True)
+                    else:
+                        display_name = next((k for k, v in GL_VSYNC_MAP.items() if v == raw_val), "Unset")
+                        self.gl_n_input.setVisible(False)
                     index = widget.findText(display_name)
                 else:
                     index = widget.findText(raw_val)
@@ -226,7 +260,15 @@ class MangoManager(QMainWindow):
             if isinstance(widget, QCheckBox): ui_updates[key] = widget.isChecked()
             elif isinstance(widget, QComboBox):
                 val = widget.currentText()
-                ui_updates[key] = VSYNC_MAP.get(val, "-1") if key == "vsync" else val
+                if key == "vsync":
+                    ui_updates[key] = VSYNC_MAP.get(val, "DELETE")
+                elif key == "gl_vsync":
+                    if val == "Custom (n)":
+                        ui_updates[key] = self.gl_n_input.text() if self.gl_n_input.text() else "DELETE"
+                    else:
+                        ui_updates[key] = GL_VSYNC_MAP.get(val, "DELETE")
+                else:
+                    ui_updates[key] = val
             else: ui_updates[key] = widget.text()
 
         new_lines = []
@@ -244,7 +286,7 @@ class MangoManager(QMainWindow):
                 val = ui_updates[found_key]
                 if isinstance(val, bool):
                     if val: new_lines.append(f"{found_key}\n")
-                elif val and val != "-1":
+                elif val and val != "DELETE" and val != "-1":
                     new_lines.append(f"{found_key}={val}\n")
             else:
                 new_lines.append(line)
@@ -252,7 +294,7 @@ class MangoManager(QMainWindow):
         for key, val in ui_updates.items():
             if key not in handled_keys:
                 if isinstance(val, bool) and val: new_lines.append(f"{key}\n")
-                elif isinstance(val, str) and val and val != "-1": new_lines.append(f"{key}={val}\n")
+                elif isinstance(val, str) and val and val != "DELETE" and val != "-1": new_lines.append(f"{key}={val}\n")
 
         with open(path, "w") as f: f.writelines(new_lines)
 
