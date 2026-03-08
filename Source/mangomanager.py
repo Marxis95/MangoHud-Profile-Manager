@@ -131,11 +131,16 @@ class MangoManager(QMainWindow):
         # --- RIGHT SIDE: QUICK TWEAKS ---
         self.right_panel = QWidget()
         self.right_layout = QVBoxLayout(self.right_panel)
-        self.form_layout = QFormLayout() # FIXED: Removed underscore
+        self.form_layout = QFormLayout()
 
         header = QLabel("Performance Settings")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #444; margin-bottom: 10px;")
         self.right_layout.addWidget(header)
+        self.open_folder_btn = QPushButton("📂 Open Config Folder")
+        self.open_folder_btn.setStyleSheet("height: 30px; margin-bottom: 10px;")
+        self.open_folder_btn.clicked.connect(lambda: self.safe_open(self.config_dir))
+        self.right_layout.addWidget(self.open_folder_btn)
+        self.form_layout = QFormLayout()
 
         for key, label, ui_type in self.QUICK_TWEAKS:
             if ui_type == "toggle":
@@ -151,6 +156,7 @@ class MangoManager(QMainWindow):
 
             self.form_layout.addRow(label, w)
             self.option_widgets[key] = w
+
 
         self.right_layout.addLayout(self.form_layout)
         self.right_layout.addStretch()
@@ -256,7 +262,7 @@ class MangoManager(QMainWindow):
         if not item: return
         path = os.path.join(self.config_dir, item.text())
         menu = QMenu()
-        menu.addAction("Edit", lambda: subprocess.Popen(['xdg-open', path]))
+        menu.addAction("Edit", lambda: self.safe_open(path))
         menu.addSeparator()
         menu.addAction("Rename", lambda: self.prompt_rename(item))
         menu.addAction("Duplicate", lambda: self.duplicate_profile(item))
@@ -320,6 +326,26 @@ class MangoManager(QMainWindow):
                 if items:
                     self.profile_list.setCurrentItem(items[0])
                     self.load_selected_profile(items[0])
+
+    def safe_open(self, path):
+        # 1. Get a copy of the current environment
+        clean_env = dict(os.environ)
+
+        # 2. Restore original paths if running in an AppImage
+        # PyInstaller sets these _ORIG variables for us automatically
+        for var in ['LD_LIBRARY_PATH', 'PYTHONPATH', 'XDG_DATA_DIRS']:
+            orig_var = var + '_ORIG'
+            if orig_var in clean_env:
+                clean_env[var] = clean_env[orig_var]
+            else:
+                # If we're not in an AppImage, just ensure the var exists or is clean
+                pass
+
+        # 3. Launch the editor using the cleaned environment
+        try:
+            subprocess.Popen(['xdg-open', path], env=clean_env)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Could not open editor: {e}")
 
     def copy_to_clipboard(self):
         QApplication.clipboard().setText(self.launch_cmd.text())
