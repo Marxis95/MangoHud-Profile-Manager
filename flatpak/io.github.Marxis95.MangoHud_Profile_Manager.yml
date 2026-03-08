@@ -9,7 +9,6 @@ finish-args:
   - --socket=fallback-x11
   - --socket=wayland
   - --device=dri
-  - --share=network
   - --filesystem=xdg-config/MangoHud:create
 
 cleanup:
@@ -21,22 +20,10 @@ cleanup:
   - "*.a"
 
 modules:
-  - name: python-dependencies
-    buildsystem: simple
-    build-options:
-      build-args:
-        - --share=network
-    build-commands:
-      - pip3 install --prefix=/app --no-cache-dir psutil PySide6-Essentials
-      - |
-        rm -rf /app/lib/python3.12/site-packages/PySide6/examples
-        rm -rf /app/lib/python3.13/site-packages/PySide6/examples
-        rm -rf /app/bin/pyside6-*
-    sources:
-      - type: shell
-        commands:
-          - echo "Installing GUI dependencies..."
+  # 1. Generated dependencies
+  - python3-modules.json
 
+  # 2. Main application
   - name: mangomanager-app
     buildsystem: simple
     sources:
