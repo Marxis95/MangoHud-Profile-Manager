@@ -326,41 +326,38 @@ class MangoManager(QMainWindow):
                     self.profile_list.setCurrentItem(items[0])
                     self.load_selected_profile(items[0])
 
-def safe_open(self, path):
-        if not os.path.exists(path):
+    def safe_open(self, path):
+        # 1. Basic validation
+        if not path or not os.path.exists(path):
             return
 
-        # 1. Check if we are inside a Flatpak
-        is_flatpak = os.path.exists("/.flatpak-info") or "FLATPAK_ID" in os.environ
-
-        if is_flatpak:
-            # Inside Flatpak: Do NOT touch the environment.
-            # The Flatpak Portal handles the hand-off to the system.
-            try:
-                subprocess.Popen(['xdg-open', path])
-            except Exception as e:
-                print(f"Flatpak launch error: {e}")
-        else:
-            # Inside AppImage (or local): Apply the Environment Reset
-            clean_env = dict(os.environ)
+        # 2. Get environment
+        clean_env = dict(os.environ)
+        
+        # 3. Detect if we are in an AppImage (The only place we need to fix things)
+        # AppImages always set the 'APPIMAGE' environment variable.
+        if 'APPIMAGE' in clean_env or 'APPDIR' in clean_env:
             keys_to_reset = ['LD_LIBRARY_PATH', 'PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD']
-            
             for key in keys_to_reset:
                 orig_key = f"{key}_ORIG"
                 if orig_key in clean_env:
                     clean_env[key] = clean_env[orig_key]
                 else:
                     clean_env.pop(key, None)
-
+            
+            # AppImage launch
             try:
-                subprocess.Popen(
-                    ['xdg-open', path], 
-                    env=clean_env, 
-                    start_new_session=True
-                )
+                subprocess.Popen(['xdg-open', path], env=clean_env, start_new_session=True)
             except Exception as e:
-                QMessageBox.critical(self, "Launcher Error", f"Could not launch: {e}")
-
+                print(f"AppImage launch error: {e}")
+        else:
+            # Flatpak or Local: Just use the system default behavior.
+            # Do NOT pass 'env=clean_env' here, let it inherit naturally.
+            try:
+                subprocess.Popen(['xdg-open', path])
+            except Exception as e:
+                print(f"Standard launch error: {e}")
+              
     def copy_to_clipboard(self):
         QApplication.clipboard().setText(self.launch_cmd.text())
         orig = self.copy_btn.text()
