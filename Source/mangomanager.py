@@ -326,25 +326,44 @@ class MangoManager(QMainWindow):
                     self.profile_list.setCurrentItem(items[0])
                     self.load_selected_profile(items[0])
 
-    def safe_open(self, path):
-        # 1. Get a copy of the current environment
+def safe_open(self, path):
+        if not os.path.exists(path):
+            QMessageBox.warning(self, "Path Error", f"Path does not exist: {path}")
+            return
+
+        # 1. Start with a copy of the current environment
         clean_env = dict(os.environ)
 
-        # 2. Restore original paths if running in an AppImage
-        # PyInstaller sets these _ORIG variables for us automatically
-        for var in ['LD_LIBRARY_PATH', 'PYTHONPATH', 'XDG_DATA_DIRS']:
-            orig_var = var + '_ORIG'
-            if orig_var in clean_env:
-                clean_env[var] = clean_env[orig_var]
+        # 2. THE TOTAL RESET
+        keys_to_clear = [
+            'LD_LIBRARY_PATH', 
+            'PYTHONPATH', 
+            'PYTHONHOME',
+            'LD_PRELOAD'
+        ]
+        
+        for key in keys_to_clear:
+            # If the '_ORIG' version exists, restore it.
+            # Otherwise, just delete the variable so the system defaults take over.
+            orig_key = f"{key}_ORIG"
+            if orig_key in clean_env:
+                clean_env[key] = clean_env[orig_key]
             else:
-                # If we're not in an AppImage, just ensure the var exists or is clean
-                pass
+                clean_env.pop(key, None)
 
-        # 3. Launch the editor using the cleaned environment
+        # 3. Launch the process
         try:
-            subprocess.Popen(['xdg-open', path], env=clean_env)
+            # We use subprocess.DEVNULL to prevent the child's output 
+            # from cluttering your app's terminal.
+            subprocess.Popen(
+                ['xdg-open', path], 
+                env=clean_env, 
+                start_new_session=True, # Detach from the parent process
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Could not open editor: {e}")
+            QMessageBox.critical(self, "Launcher Error", f"Could not launch: {e}")
 
     def copy_to_clipboard(self):
         QApplication.clipboard().setText(self.launch_cmd.text())
