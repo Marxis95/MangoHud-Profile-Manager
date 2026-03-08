@@ -53,16 +53,8 @@ modules:
       # Install the Metainfo file (the store description)
       - install -D Source/io.github.Marxis95.MangoHud_Profile_Manager.metainfo.xml /app/share/metainfo/io.github.Marxis95.MangoHud_Profile_Manager.metainfo.xml
 
-      # Create and install the Desktop Entry
-      - |
-        echo '[Desktop Entry]
-        Name=MangoHud Profile Manager
-        Comment=Manage MangoHud performance overlay profiles
-        Exec=mangomanager-wrapper
-        Type=Application
-        Icon=io.github.Marxis95.MangoHud_Profile_Manager
-        Categories=Game;Utility;' > io.github.Marxis95.MangoHud_Profile_Manager.desktop
-      - install -D io.github.Marxis95.MangoHud_Profile_Manager.desktop /app/share/applications/io.github.Marxis95.MangoHud_Profile_Manager.desktop
+      # Install the Desktop Entry
+      - install -D flatpak/io.github.Marxis95.MangoHud_Profile_Manager.desktop /app/share/applications/io.github.Marxis95.MangoHud_Profile_Manager.desktop
 
       # Create the wrapper script
       - |
