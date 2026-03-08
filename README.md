@@ -18,7 +18,7 @@ The easiest way to run MangoManager is via the AppImage.
    chmod +x install.sh
    ./install.sh
 
-2. Flatpak
+### 2. Flatpak build from source (NOT Recommended)
 
 If you prefer Flatpak, you can build it using the provided manifest:
 Bash
