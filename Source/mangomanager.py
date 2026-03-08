@@ -136,11 +136,6 @@ class MangoManager(QMainWindow):
         header = QLabel("Performance Settings")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #444; margin-bottom: 10px;")
         self.right_layout.addWidget(header)
-        self.open_folder_btn = QPushButton("📂 Open Config Folder")
-        self.open_folder_btn.setStyleSheet("height: 30px; margin-bottom: 10px;")
-        self.open_folder_btn.clicked.connect(lambda: self.safe_open(self.config_dir))
-        self.right_layout.addWidget(self.open_folder_btn)
-        self.form_layout = QFormLayout()
 
         for key, label, ui_type in self.QUICK_TWEAKS:
             if ui_type == "toggle":
@@ -161,7 +156,11 @@ class MangoManager(QMainWindow):
         self.right_layout.addLayout(self.form_layout)
         self.right_layout.addStretch()
         self.right_layout.addWidget(QLabel("<i>Note: Other settings are preserved when editing.</i>"))
-
+        self.open_folder_btn = QPushButton("📂 Open Config Folder")
+        self.open_folder_btn.setStyleSheet("height: 30px; margin-bottom: 10px;")
+        self.open_folder_btn.clicked.connect(lambda: self.safe_open(self.config_dir))
+        self.right_layout.addWidget(self.open_folder_btn)
+        self.form_layout = QFormLayout()
         self.splitter.addWidget(self.right_panel)
         self.setCentralWidget(self.splitter)
 
