@@ -26,8 +26,10 @@
 
     <screenshots>
         <screenshot type="default">
+            <caption>The logo.</caption>
+            <image>https://github.com/Marxis95/MangoHud-Profile-Manager/blob/66f3df88a499c08746659dd2287fa7be7553fa92/flatpak/io.github.Marxis95.MangoHud_Profile_Manager.png</image>
             <caption>The main dashboard.</caption>
-            <image>https://raw.githubusercontent.com/Marxis95/MangoHud-Profile-Manager/main/flatpak/io.github.Marxis95.MangoHud_Profile_Manager.png</image>
+            <image>https://github.com/Marxis95/MangoHud-Profile-Manager/blob/66f3df88a499c08746659dd2287fa7be7553fa92/dashboard.png</image>
         </screenshot>
     </screenshots>
 
