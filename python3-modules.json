@@ -1,0 +1,49 @@
+{
+    "name": "python3-modules",
+    "buildsystem": "simple",
+    "build-commands": [],
+    "modules": [
+        {
+            "name": "python3-psutil",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"psutil\" --no-build-isolation"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/aa/c6/d1ddf4abb55e93cebc4f2ed8b5d6dbad109ecb8d63748dd2b20ab5e57ebe/psutil-7.2.2.tar.gz",
+                    "sha256": "0746f5f8d406af344fd547f1c8daa5f5c33dbc293bb8d6a16d80b4bb88f59372"
+                }
+            ]
+        },
+        {
+            "name": "python3-shiboken6",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"shiboken6\" --no-build-isolation"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/60/9e/75a76747d9530490f230737a016666be336965476a6d68b693259649539d/shiboken6-6.8.2.1-cp39-abi3-manylinux_2_28_x86_64.whl",
+                    "sha256": "430372074e50882f094d4d29e3776e107dfd218d6076757f9202166a9f8742b8"
+                }
+            ]
+        },
+        {
+            "name": "python3-PySide6-Essentials",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"PySide6-Essentials\" --no-build-isolation"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/68/70/463a8a0b0d2382414168923a10be697f4805e2671392661848a6058e390c/PySide6_Essentials-6.8.2.1-cp39-abi3-manylinux_2_28_x86_64.whl",
+                    "sha256": "812f849646c2457813735f0f37c35e80031804b77873550e58832599745e1f0e"
+                }
+            ]
+        }
+    ]
+}
