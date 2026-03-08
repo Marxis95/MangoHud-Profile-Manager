@@ -1,0 +1,56 @@
+name: Build Compatible AppImage
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Build Tools
+        run: |
+          pip install pyinstaller psutil PySide6-Essentials
+          sudo apt-get install -y libfuse2  # Required for appimagetool
+
+      - name: Build Binary
+        run: |
+          pyinstaller --noconfirm --onefile --windowed Source/mangomanager.py
+
+      - name: Create AppDir Structure
+        run: |
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          
+          # Copy binary
+          cp dist/mangomanager AppDir/usr/bin/
+          
+          # Copy Metadata (Adjust paths if your files are named differently)
+          cp flatpak/io.github.Marxis95.MangoHud_Profile_Manager.desktop AppDir/
+          cp flatpak/io.github.Marxis95.MangoHud_Profile_Manager.png AppDir/
+          
+          # Create the required AppRun symlink
+          ln -s usr/bin/mangomanager AppDir/AppRun
+
+      - name: Download and Run appimagetool
+        run: |
+          wget -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          # ARCH is required for the tool to know what it's building
+          ARCH=x86_64 ./appimagetool AppDir/ MangoManager-x86_64.AppImage
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: MangoManager-AppImage
+          path: MangoManager-x86_64.AppImage
