@@ -34,29 +34,6 @@ Prerequisites
 
     pip
 
-Setup
-
-    Clone the repository:
-    Bash
-
-    git clone [https://github.com/Marxis95/MangoHud-Profile-Manager.git](https://github.com/Marxis95/MangoHud-Profile-Manager.git)
-    cd MangoManager
-
-    Create and activate a virtual environment:
-    Bash
-
-    python3 -m venv venv
-    source venv/bin/activate  # Or activate.fish for Fish shell
-
-    Install dependencies:
-    Bash
-
-    pip install PySide6-Essentials psutil
-
-    Run the app:
-    Bash
-
-    python3 Source/mangomanager.py
 
 🗑 Uninstallation
 
@@ -66,3 +43,6 @@ Bash
 cd Appimage
 chmod +x uninstall.sh
 ./uninstall.sh
+
+To remove the flatpak:
+flatpak uninstall io.github.Marxis95.MangoHud_Profile_Manager
