@@ -328,42 +328,38 @@ class MangoManager(QMainWindow):
 
 def safe_open(self, path):
         if not os.path.exists(path):
-            QMessageBox.warning(self, "Path Error", f"Path does not exist: {path}")
             return
 
-        # 1. Start with a copy of the current environment
-        clean_env = dict(os.environ)
+        # 1. Check if we are inside a Flatpak
+        is_flatpak = os.path.exists("/.flatpak-info") or "FLATPAK_ID" in os.environ
 
-        # 2. THE TOTAL RESET
-        keys_to_clear = [
-            'LD_LIBRARY_PATH', 
-            'PYTHONPATH', 
-            'PYTHONHOME',
-            'LD_PRELOAD'
-        ]
-        
-        for key in keys_to_clear:
-            # If the '_ORIG' version exists, restore it.
-            # Otherwise, just delete the variable so the system defaults take over.
-            orig_key = f"{key}_ORIG"
-            if orig_key in clean_env:
-                clean_env[key] = clean_env[orig_key]
-            else:
-                clean_env.pop(key, None)
+        if is_flatpak:
+            # Inside Flatpak: Do NOT touch the environment.
+            # The Flatpak Portal handles the hand-off to the system.
+            try:
+                subprocess.Popen(['xdg-open', path])
+            except Exception as e:
+                print(f"Flatpak launch error: {e}")
+        else:
+            # Inside AppImage (or local): Apply the Environment Reset
+            clean_env = dict(os.environ)
+            keys_to_reset = ['LD_LIBRARY_PATH', 'PYTHONPATH', 'PYTHONHOME', 'LD_PRELOAD']
+            
+            for key in keys_to_reset:
+                orig_key = f"{key}_ORIG"
+                if orig_key in clean_env:
+                    clean_env[key] = clean_env[orig_key]
+                else:
+                    clean_env.pop(key, None)
 
-        # 3. Launch the process
-        try:
-            # We use subprocess.DEVNULL to prevent the child's output 
-            # from cluttering your app's terminal.
-            subprocess.Popen(
-                ['xdg-open', path], 
-                env=clean_env, 
-                start_new_session=True, # Detach from the parent process
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-        except Exception as e:
-            QMessageBox.critical(self, "Launcher Error", f"Could not launch: {e}")
+            try:
+                subprocess.Popen(
+                    ['xdg-open', path], 
+                    env=clean_env, 
+                    start_new_session=True
+                )
+            except Exception as e:
+                QMessageBox.critical(self, "Launcher Error", f"Could not launch: {e}")
 
     def copy_to_clipboard(self):
         QApplication.clipboard().setText(self.launch_cmd.text())
