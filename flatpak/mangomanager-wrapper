@@ -1,0 +1,4 @@
+#!/bin/sh
+        export PYTHONPATH=$PYTHONPATH:/app/lib/python3.12/site-packages:/app/lib/python3.13/site-packages
+        exec python3 /app/lib/mangomanager/mangomanager.py "$@"' > /app/bin/mangomanager-wrapper
+      - chmod +x /app/bin/mangomanager-wrapper
